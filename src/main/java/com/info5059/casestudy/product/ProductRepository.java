@@ -16,6 +16,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     @Transactional
     @Query("delete from Product where id = ?1")
     int deleteOne(String productid);
+
     List<Product> findByVendorid(Long vendorid);
 
 }

@@ -37,150 +37,163 @@ import java.util.logging.Logger;
 import java.time.LocalDateTime;
 
 public abstract class PurchaseOrderPDFGenerator extends AbstractPdfView {
-    public static ByteArrayInputStream generateReport(String poid, PurchaseOrderRepository purchaseRepository,
-            ProductRepository productRepository, VendorRepository vendorRepository) throws IOException {
-        PurchaseOrder po = new PurchaseOrder();
-        URL imageUrl = PurchaseOrderPDFGenerator.class.getResource("/static/images/Logo.jpg");
-        ByteArrayOutputStream boas = new ByteArrayOutputStream();
-        PdfWriter writer = new PdfWriter(boas);
-        PdfDocument pdf = new PdfDocument(writer);
-        Document document = new Document(pdf, PageSize.A4);
-        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
-        PageSize pagesize = PageSize.A4;
-        Image img = new Image(ImageDataFactory.create(imageUrl)).scaleAbsolute(140, 100)
-                .setFixedPosition(pagesize.getWidth() / 2 - 60, 730).setMarginTop(5);
-        document.add(img);
-        document.add(new Paragraph("\n\n"));
-        Locale locale = Locale.of("en", "US");
-        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(locale);
-        try {
-            document.add(new Paragraph("\n"));
-            Optional<PurchaseOrder> purchaseOrder = purchaseRepository.findById(Long.parseLong(poid));
-            document.add(new Paragraph("Purchase Order#: " + poid).setFont(font).setFontSize(15).setBold()
-                    .setTextAlignment(TextAlignment.LEFT).setMarginRight(pagesize.getWidth() / 2 - 75)
-                    .setMarginTop(-10));
-            document.add(new Paragraph("\n\n"));
+        public static ByteArrayInputStream generateReport(String poid, PurchaseOrderRepository purchaseRepository,
+                        ProductRepository productRepository, VendorRepository vendorRepository) throws IOException {
+                PurchaseOrder po = new PurchaseOrder();
+                URL imageUrl = PurchaseOrderPDFGenerator.class.getResource("/static/images/Logo.jpg");
+                ByteArrayOutputStream boas = new ByteArrayOutputStream();
+                PdfWriter writer = new PdfWriter(boas);
+                PdfDocument pdf = new PdfDocument(writer);
+                Document document = new Document(pdf, PageSize.A4);
+                PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+                PageSize pagesize = PageSize.A4;
+                Image img = new Image(ImageDataFactory.create(imageUrl)).scaleAbsolute(140, 100)
+                                .setFixedPosition(pagesize.getWidth() / 2 - 60, 730).setMarginTop(5);
+                document.add(img);
+                document.add(new Paragraph("\n\n"));
+                Locale locale = Locale.of("en", "US");
+                NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(locale);
+                try {
+                        document.add(new Paragraph("\n"));
+                        Optional<PurchaseOrder> purchaseOrder = purchaseRepository.findById(Long.parseLong(poid));
+                        document.add(new Paragraph("Purchase Order#: " + poid).setFont(font).setFontSize(15).setBold()
+                                        .setTextAlignment(TextAlignment.LEFT)
+                                        .setMarginRight(pagesize.getWidth() / 2 - 75)
+                                        .setMarginTop(-10));
+                        document.add(new Paragraph("\n\n"));
 
-            Table vendorTable = new Table(2).setWidth(new UnitValue(UnitValue.PERCENT, 30))
-                    .setHorizontalAlignment(HorizontalAlignment.LEFT);
+                        Table vendorTable = new Table(2).setWidth(new UnitValue(UnitValue.PERCENT, 30))
+                                        .setHorizontalAlignment(HorizontalAlignment.LEFT);
 
-            if (purchaseOrder.isPresent()) {
-                po = purchaseOrder.get();
-                Optional<Vendor> vendor = vendorRepository.findById(purchaseOrder.get().getVendorid());
-                if (vendor.isPresent()) {
-                    Vendor ven = vendor.get();
+                        if (purchaseOrder.isPresent()) {
+                                po = purchaseOrder.get();
+                                Optional<Vendor> vendor = vendorRepository.findById(purchaseOrder.get().getVendorid());
+                                if (vendor.isPresent()) {
+                                        Vendor ven = vendor.get();
 
-                    Cell cell = new Cell()
-                            .add(new Paragraph("Vendor: ").setFont(font).setFontSize(12).setBold())
-                            .setBorder(Border.NO_BORDER);
-                    vendorTable.addCell(cell);
+                                        Cell cell = new Cell()
+                                                        .add(new Paragraph("Vendor: ").setFont(font).setFontSize(12)
+                                                                        .setBold())
+                                                        .setBorder(Border.NO_BORDER);
+                                        vendorTable.addCell(cell);
 
-                    Cell cell2 = new Cell()
-                            .add(new Paragraph(ven.getName() + "\n" + ven.getAddress1() + "\n" + ven.getCity() + ", "
-                                    + ven.getProvince() + "\n" + ven.getEmail()).setFont(font).setFontSize(12))
-                            .setBackgroundColor(ColorConstants.LIGHT_GRAY).setBorder(Border.NO_BORDER);
-                    vendorTable.addCell(cell2);
+                                        Cell cell2 = new Cell()
+                                                        .add(new Paragraph(ven.getName() + "\n" + ven.getAddress1()
+                                                                        + "\n" + ven.getCity() + ", "
+                                                                        + ven.getProvince() + "\n" + ven.getEmail())
+                                                                        .setFont(font).setFontSize(12))
+                                                        .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                                                        .setBorder(Border.NO_BORDER);
+                                        vendorTable.addCell(cell2);
+                                }
+                        }
+                        document.add(vendorTable);
+                        document.add(new Paragraph("\n"));
+
+                        Table productTable = new Table(5).setWidth(new UnitValue(UnitValue.PERCENT, 100))
+                                        .setHorizontalAlignment(HorizontalAlignment.LEFT);
+                        Cell cell = new Cell()
+                                        .add(new Paragraph("Product Code").setFont(font).setFontSize(12).setBold())
+                                        .setTextAlignment(TextAlignment.CENTER);
+                        productTable.addCell(cell);
+
+                        cell = new Cell().add(new Paragraph("Description").setFont(font).setFontSize(12).setBold())
+                                        .setTextAlignment(TextAlignment.CENTER);
+                        productTable.addCell(cell);
+
+                        cell = new Cell().add(new Paragraph("QTY Sold").setFont(font).setFontSize(12).setBold())
+                                        .setTextAlignment(TextAlignment.CENTER);
+                        productTable.addCell(cell);
+
+                        cell = new Cell().add(new Paragraph("Price").setFont(font).setFontSize(12).setBold())
+                                        .setTextAlignment(TextAlignment.CENTER);
+                        productTable.addCell(cell);
+
+                        cell = new Cell().add(new Paragraph("EXT. Price").setFont(font).setFontSize(12).setBold())
+                                        .setTextAlignment(TextAlignment.CENTER);
+                        productTable.addCell(cell);
+
+                        BigDecimal sub_total = new BigDecimal(0.0);
+                        BigDecimal TAX_AMOUNT = new BigDecimal(0.0);
+                        BigDecimal TOTAL = new BigDecimal(0.0);
+
+                        for (PurchaseOrderLineItem POLineItem : po.getItems()) {
+                                Optional<Product> product = productRepository.findById(POLineItem.getProductid());
+                                if (product.isPresent()) {
+                                        Product prod = product.get();
+                                        cell = new Cell().add(new Paragraph(prod.getId()).setFont(font).setFontSize(12))
+                                                        .setTextAlignment(TextAlignment.CENTER);
+                                        productTable.addCell(cell);
+
+                                        cell = new Cell()
+                                                        .add(new Paragraph(prod.getName()).setFont(font)
+                                                                        .setFontSize(12))
+                                                        .setTextAlignment(TextAlignment.CENTER);
+                                        productTable.addCell(cell);
+
+                                        cell = new Cell()
+                                                        .add(new Paragraph(String.valueOf(POLineItem.getQty()))
+                                                                        .setFont(font).setFontSize(12))
+                                                        .setTextAlignment(TextAlignment.CENTER);
+                                        productTable.addCell(cell);
+
+                                        cell = new Cell()
+                                                        .add(new Paragraph(
+                                                                        currencyFormatter.format(prod.getCostprice()))
+                                                                        .setFont(font)
+                                                                        .setFontSize(12))
+                                                        .setTextAlignment(TextAlignment.CENTER);
+                                        productTable.addCell(cell);
+
+                                        BigDecimal extPrice = prod.getCostprice()
+                                                        .multiply(new BigDecimal(POLineItem.getQty()));
+                                        sub_total = sub_total.add(extPrice);
+                                        TAX_AMOUNT = sub_total.multiply(new BigDecimal(0.13));
+                                        TOTAL = sub_total.add(TAX_AMOUNT);
+                                        cell = new Cell()
+                                                        .add(new Paragraph(currencyFormatter.format(extPrice))
+                                                                        .setFont(font).setFontSize(12))
+                                                        .setTextAlignment(TextAlignment.CENTER);
+                                        productTable.addCell(cell);
+                                }
+                        }
+
+                        cell = new Cell(1, 4).add(new Paragraph("Sub Total:"))
+                                        .setBorder(Border.NO_BORDER)
+                                        .setTextAlignment(TextAlignment.RIGHT);
+                        productTable.addCell(cell);
+                        cell = new Cell().add(new Paragraph(currencyFormatter.format(sub_total)))
+                                        .setTextAlignment(TextAlignment.CENTER);
+                        productTable.addCell(cell);
+
+                        cell = new Cell(1, 4).add(new Paragraph("TAX:"))
+                                        .setBorder(Border.NO_BORDER)
+                                        .setTextAlignment(TextAlignment.RIGHT);
+                        productTable.addCell(cell);
+                        cell = new Cell().add(new Paragraph(currencyFormatter.format(TAX_AMOUNT)))
+                                        .setTextAlignment(TextAlignment.CENTER);
+                        productTable.addCell(cell);
+
+                        cell = new Cell(1, 4).add(new Paragraph("PO Total:"))
+                                        .setBorder(Border.NO_BORDER)
+                                        .setTextAlignment(TextAlignment.RIGHT);
+                        productTable.addCell(cell);
+                        cell = new Cell().add(new Paragraph(currencyFormatter.format(TOTAL)))
+                                        .setTextAlignment(TextAlignment.CENTER)
+                                        .setBackgroundColor(ColorConstants.YELLOW);
+                        productTable.addCell(cell);
+
+                        document.add(productTable);
+                        document.add(new Paragraph("\n\n"));
+                        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a");
+                        document.add(new Paragraph(dateFormatter.format(LocalDateTime.now()))
+                                        .setTextAlignment(TextAlignment.CENTER));
+                        document.close();
+
+                } catch (Exception e) {
+                        Logger.getLogger(PurchaseOrderPDFGenerator.class.getName()).log(Level.SEVERE, null, e);
                 }
-            }
-            document.add(vendorTable);
-            document.add(new Paragraph("\n"));
-
-            Table productTable = new Table(5).setWidth(new UnitValue(UnitValue.PERCENT, 100))
-                    .setHorizontalAlignment(HorizontalAlignment.LEFT);
-            Cell cell = new Cell().add(new Paragraph("Product Code").setFont(font).setFontSize(12).setBold())
-                    .setTextAlignment(TextAlignment.CENTER);
-            productTable.addCell(cell);
-
-            cell = new Cell().add(new Paragraph("Description").setFont(font).setFontSize(12).setBold())
-                    .setTextAlignment(TextAlignment.CENTER);
-            productTable.addCell(cell);
-
-            cell = new Cell().add(new Paragraph("QTY Sold").setFont(font).setFontSize(12).setBold())
-                    .setTextAlignment(TextAlignment.CENTER);
-            productTable.addCell(cell);
-
-            cell = new Cell().add(new Paragraph("Price").setFont(font).setFontSize(12).setBold())
-                    .setTextAlignment(TextAlignment.CENTER);
-            productTable.addCell(cell);
-
-            cell = new Cell().add(new Paragraph("EXT. Price").setFont(font).setFontSize(12).setBold())
-                    .setTextAlignment(TextAlignment.CENTER);
-            productTable.addCell(cell);
-
-            BigDecimal sub_total = new BigDecimal(0.0);
-            BigDecimal TAX_AMOUNT = new BigDecimal(0.0);
-            BigDecimal TOTAL = new BigDecimal(0.0);
-
-            for (PurchaseOrderLineItem POLineItem : po.getItems()) {
-                Optional<Product> product = productRepository.findById(POLineItem.getProductid());
-                if (product.isPresent()) {
-                    Product prod = product.get();
-                    cell = new Cell().add(new Paragraph(prod.getId()).setFont(font).setFontSize(12))
-                            .setTextAlignment(TextAlignment.CENTER);
-                    productTable.addCell(cell);
-
-                    cell = new Cell().add(new Paragraph(prod.getName()).setFont(font).setFontSize(12))
-                            .setTextAlignment(TextAlignment.CENTER);
-                    productTable.addCell(cell);
-
-                    cell = new Cell()
-                            .add(new Paragraph(String.valueOf(POLineItem.getQty())).setFont(font).setFontSize(12))
-                            .setTextAlignment(TextAlignment.CENTER);
-                    productTable.addCell(cell);
-
-                    cell = new Cell()
-                            .add(new Paragraph(currencyFormatter.format(prod.getCostprice())).setFont(font)
-                                    .setFontSize(12))
-                            .setTextAlignment(TextAlignment.CENTER);
-                    productTable.addCell(cell);
-
-                    BigDecimal extPrice = prod.getCostprice().multiply(new BigDecimal(POLineItem.getQty()));
-                    sub_total = sub_total.add(extPrice);
-                    TAX_AMOUNT = sub_total.multiply(new BigDecimal(0.13));
-                    TOTAL = sub_total.add(TAX_AMOUNT);
-                    cell = new Cell()
-                            .add(new Paragraph(currencyFormatter.format(extPrice)).setFont(font).setFontSize(12))
-                            .setTextAlignment(TextAlignment.CENTER);
-                    productTable.addCell(cell);
-                }
-            }
-
-            cell = new Cell(1, 4).add(new Paragraph("Sub Total:"))
-                    .setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.RIGHT);
-            productTable.addCell(cell);
-            cell = new Cell().add(new Paragraph(currencyFormatter.format(sub_total)))
-                    .setTextAlignment(TextAlignment.CENTER);
-            productTable.addCell(cell);
-
-            cell = new Cell(1, 4).add(new Paragraph("TAX:"))
-                    .setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.RIGHT);
-            productTable.addCell(cell);
-            cell = new Cell().add(new Paragraph(currencyFormatter.format(TAX_AMOUNT)))
-                    .setTextAlignment(TextAlignment.CENTER);
-            productTable.addCell(cell);
-
-            cell = new Cell(1, 4).add(new Paragraph("PO Total:"))
-                    .setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.RIGHT);
-            productTable.addCell(cell);
-            cell = new Cell().add(new Paragraph(currencyFormatter.format(TOTAL)))
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setBackgroundColor(ColorConstants.YELLOW);
-            productTable.addCell(cell);
-
-            document.add(productTable);
-            document.add(new Paragraph("\n\n"));
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a");
-            document.add(new Paragraph(dateFormatter.format(LocalDateTime.now()))
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.close();
-
-        } catch (Exception e) {
-            Logger.getLogger(PurchaseOrderPDFGenerator.class.getName()).log(Level.SEVERE, null, e);
+                return new ByteArrayInputStream(boas.toByteArray());
         }
-        return new ByteArrayInputStream(boas.toByteArray());
-    }
 
 }
