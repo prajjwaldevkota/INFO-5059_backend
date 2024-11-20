@@ -19,9 +19,15 @@ public class PurchaseOrderController {
         return new ResponseEntity<PurchaseOrder>(purchaseOrderDAO.create(purchaseOrder), HttpStatus.OK);
     }
 
-    @GetMapping("/api/pos")
+    @GetMapping("/api/purchaseorders")
     public ResponseEntity<Iterable<PurchaseOrder>> findAll() {
         Iterable<PurchaseOrder> pos = poRepository.findAll();
         return new ResponseEntity<Iterable<PurchaseOrder>>(pos, HttpStatus.OK);
     }
+
+    @GetMapping("/api/purchaseorders/{id}")
+    public ResponseEntity<Iterable<PurchaseOrder>> findbyVendor(@PathVariable Long id) {
+        return new ResponseEntity<Iterable<PurchaseOrder>>(poRepository.findByVendorid(id), HttpStatus.OK);
+    }
+
 }
