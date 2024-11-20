@@ -1,7 +1,9 @@
 package com.info5059.casestudy.PurchaseOrder;
 
+import com.google.zxing.qrcode.encoder.QRCode;
 import com.info5059.casestudy.product.Product;
 import com.info5059.casestudy.product.ProductRepository;
+import com.info5059.casestudy.product.QRCodeGenerator;
 import com.info5059.casestudy.vendor.Vendor;
 import com.info5059.casestudy.vendor.VendorRepository;
 import com.itextpdf.io.font.constants.StandardFonts;
@@ -40,6 +42,7 @@ public abstract class PurchaseOrderPDFGenerator extends AbstractPdfView {
         public static ByteArrayInputStream generateReport(String poid, PurchaseOrderRepository purchaseRepository,
                         ProductRepository productRepository, VendorRepository vendorRepository) throws IOException {
                 PurchaseOrder po = new PurchaseOrder();
+
                 URL imageUrl = PurchaseOrderPDFGenerator.class.getResource("/static/images/Logo.jpg");
                 ByteArrayOutputStream boas = new ByteArrayOutputStream();
                 PdfWriter writer = new PdfWriter(boas);
@@ -70,7 +73,7 @@ public abstract class PurchaseOrderPDFGenerator extends AbstractPdfView {
                                 Optional<Vendor> vendor = vendorRepository.findById(purchaseOrder.get().getVendorid());
                                 if (vendor.isPresent()) {
                                         Vendor ven = vendor.get();
-
+                                        Image qrcode = addSummaryQRCode(ven, po);
                                         Cell cell = new Cell()
                                                         .add(new Paragraph("Vendor: ").setFont(font).setFontSize(12)
                                                                         .setBold())
@@ -85,6 +88,9 @@ public abstract class PurchaseOrderPDFGenerator extends AbstractPdfView {
                                                         .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                                                         .setBorder(Border.NO_BORDER);
                                         vendorTable.addCell(cell2);
+                                        if (qrcode != null) {
+                                                document.add(qrcode);
+                                        }
                                 }
                         }
                         document.add(vendorTable);
@@ -196,4 +202,30 @@ public abstract class PurchaseOrderPDFGenerator extends AbstractPdfView {
                 return new ByteArrayInputStream(boas.toByteArray());
         }
 
+        private static Image addSummaryQRCode(Vendor vendor, PurchaseOrder po) {
+                QRCodeGenerator qrCodeGenerator = new QRCodeGenerator();
+                try {
+                        // Format the summary string
+                        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a");
+                        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.of("en", "US"));
+
+                        String qrContent = "Summary for Purchase Order: " + po.getId() +
+                                        "\nDate: " + dateFormatter.format(po.getPodate()) +
+                                        "\nVendor: " + vendor.getName() +
+                                        "\nTotal: " + currencyFormatter.format(po.getAmount());
+
+                        // Generate QR Code byte array
+                        byte[] qrcodebin = qrCodeGenerator.generateQRCode(qrContent);
+
+                        // Create and position QR Code image
+                        Image qrcode = new Image(ImageDataFactory.create(qrcodebin))
+                                        .scaleAbsolute(100, 100)
+                                        .setFixedPosition(460, 60);
+
+                        return qrcode;
+                } catch (Exception e) {
+                        Logger.getLogger(PurchaseOrderPDFGenerator.class.getName()).log(Level.SEVERE, null, e);
+                        return null;
+                }
+        }
 }
