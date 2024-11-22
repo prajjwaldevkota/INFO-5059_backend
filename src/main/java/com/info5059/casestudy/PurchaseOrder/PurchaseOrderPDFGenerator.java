@@ -1,6 +1,5 @@
 package com.info5059.casestudy.PurchaseOrder;
 
-import com.google.zxing.qrcode.encoder.QRCode;
 import com.info5059.casestudy.product.Product;
 import com.info5059.casestudy.product.ProductRepository;
 import com.info5059.casestudy.product.QRCodeGenerator;
