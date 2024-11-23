@@ -191,7 +191,8 @@ public abstract class PurchaseOrderPDFGenerator extends AbstractPdfView {
                         document.add(productTable);
                         document.add(new Paragraph("\n\n"));
                         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a");
-                        document.add(new Paragraph(dateFormatter.format(LocalDateTime.now()))
+
+                        document.add(new Paragraph(dateFormatter.format(po.getPodate())).setFont(font).setFontSize(12)
                                         .setTextAlignment(TextAlignment.CENTER));
                         document.close();
 
