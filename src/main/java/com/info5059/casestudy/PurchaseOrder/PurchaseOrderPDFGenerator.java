@@ -35,7 +35,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.time.LocalDateTime;
 
 public abstract class PurchaseOrderPDFGenerator extends AbstractPdfView {
         public static ByteArrayInputStream generateReport(String poid, PurchaseOrderRepository purchaseRepository,
